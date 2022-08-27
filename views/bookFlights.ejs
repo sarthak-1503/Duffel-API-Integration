@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Flights</title>
+</head>
+<body>
+    <div class="search-header">
+        <h4>
+            Book Flights
+        </h4>
+    </div>
+    <div class="form-header">
+        <form action="/api/orders/createOrder/<%=offer_request_id%>" method="POST">
+            <!-- <div class="passengerId form-contents">
+                <input type="text" placeholder="Passenger ID" name="passengerId" id="passengerId">
+            </div> -->
+
+            <%passengersData.map((data) => {%>
+                <div class="passengerType form-contents">
+                    <select name="passengerType" id="passengerType" required>
+                        <option value="Select passenger category" disabled selected>Select passenger category</option>
+                        <option value="adult">Adult</option>
+                        <option value="child" >Child</option>
+                        <option value="infant_without_seat">Infant without seat</option>
+                    </select>
+                    <!-- selected="<%(data.type === 'adult') ? true : false%>" -->
+                    <!-- selected="<%(data.type === 'child') ? true : false%>" -->
+                    <!-- selected="<%(data.type === 'infant_without_seat') ? true : false%>" -->
+                </div>
+                <div class="familyName form-contents">
+                    <input type="text" placeholder="Family Name" name="familyName" id="familyName" value="<%=data.family_name%>" disabled>
+                </div>
+                <div class="givenName form-contents">
+                    <input type="text" placeholder="Given Name*" name="givenName" id="givenName" value="<%=data.given_name%>" disabled>
+                </div>
+                <div class="dob form-contents">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" placeholder="Passenger Date of Birth" name="dob" id="dob" required>
+                </div>
+                <div class="title form-contents">
+                    <select name="title" id="title" required>
+                        <option value="Select passenger title" disabled selected>Select passenger title</option>
+                        <option value="mr">Mr.</option>
+                        <option value="ms">Ms.</option>
+                        <option value="mrs">Mrs.</option>
+                        <option value="miss">Miss.</option>
+                        <option value="dr">Dr.</option>
+                    </select>
+                </div>
+                <div class="phone_no form-contents">
+                    <input type="text" placeholder="Country" name="country" id="country" required>
+                    <input type="string" placeholder="Phone Number*" name="phone_no" id="phone_no" minlength="10" maxlength="10" required>
+                </div>
+                <select name="gender" id="gender" required>
+                    <option value="Select passenger gender" disabled selected>Select Passenger Gender</option>
+                    <option value="m">Male</option>
+                    <option value="f" >Female</option>
+                </select>
+                <div class="email form-contents">
+                    <input type="email" placeholder="Email*" name="email" id="email" required>
+                </div>     
+            <%})%>
+
+            <div class="paymentType form-contents">
+                <select name="paymentType" id="paymentType" required>
+                    <option value="Select payment type" disabled selected>Select payment type</option>
+                    <option value="instant">Instant</option>
+                    <option value="hold" >Hold</option>
+                </select>
+            </div>
+
+            <div class="offerids form-contents">
+                <input type="text" placeholder="Enter the Offer Ids separated by spaces" name="offerids" id="offerids">
+            </div>
+            <div class="book-flight">
+                <button type="submit">Book Flights</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

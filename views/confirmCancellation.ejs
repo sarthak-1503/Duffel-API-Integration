@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Order Cancellation</title>
+</head>
+<body>
+    <%=JSON.stringify(orderDetails)%>
+
+    <div>
+        <h4>
+            <b>Are you sure you want to cancel the above order?</b>
+        </h4>
+    </div>
+
+    <div>
+        <form action="/api/orders/confirm-cancel/<%=orderId%>/<%=precancellationId%>" method="post">
+            <button type="submit">
+                Confirm
+            </button>
+        </form>
+
+        <button onclick="history.back()">
+            Go back
+        </button>
+    </div>
+
+</body>
+</html>

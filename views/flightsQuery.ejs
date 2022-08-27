@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flights Query</title>
+</head>
+
+<body>
+
+    <div class="search-header">
+        <h4>
+            Search Flights
+        </h4>
+    </div>
+    <div class="form-header">
+        <form action="/api/flights-queries" method="POST">
+            <div class="cabinClass form-contents">
+                <select name="cabinClass" id="cabinClass">
+                    <option value="Select Cabin Class" disabled selected>Select Cabin Class</option>
+                    <option value="first">First</option>
+                    <option value="business">Business</option>
+                    <option value="premium_economy">Premium Economy</option>
+                    <option value="economy">Economy</option>
+                </select>
+            </div>
+            <div class="passengerType form-contents">
+                <select name="passengerType" id="cabinClass">
+                    <option value="Select passenger category" disabled selected>Select passenger category</option>
+                    <option value="adult">Adult</option>
+                    <option value="child">Child</option>
+                    <option value="infant_without_seat">Infact without seat</option>
+                </select>
+            </div>
+            <div class="familyName form-contents">
+                <input type="text" placeholder="Family Name*" name="familyName" id="familyName" required>
+            </div>
+            <div class="givenName form-contents">
+                <input type="text" placeholder="Given Name*" name="givenName" id="givenName" required>
+            </div>
+            <div class="departureDate form-contents">
+                <label for="departureDate">Departure Date</label>
+                <input type="date" placeholder="Departure Date*"
+                    pattern="/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/" name="departureDate" id="departureDate"
+                    required>
+            </div>
+            <div class="destination form-contents">
+                <input type="text" placeholder="Destination*" name="destination" id="destination" required>
+            </div>
+            <div class="origin form-contents">
+                <input type="text" placeholder="Origin*" name="origin" id="origin" required>
+            </div>
+            <div class="departureTimeFrom form-contents">
+                <input type="text" placeholder="Departure Time From" name="departureTimeFrom" id="departureTimeFrom">
+            </div>
+            <div class="departureTimeTo form-contents">
+                <input type="text" placeholder="Departure Time To" name="departureTimeTo" id="departureTimeTo">
+            </div>
+            <div class="arrivalTimeFrom form-contents">
+                <input type="text" placeholder="Arrival Time From" name="arrivalTimeFrom" id="arrivalTimeFrom">
+            </div>
+            <div class="arrivalTimeTo form-contents">
+                <input type="text" placeholder="Arrival Time To" name="arrivalTimeTo" id="arrivalTimeTo">
+            </div>
+            <div class="query-submit">
+                <button type="submit">Search Flights</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+
+</html>
