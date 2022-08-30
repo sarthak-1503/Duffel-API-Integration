@@ -23,7 +23,7 @@ router.get("/create/:orderId", async (req, res) => {
 
   let paymentDetails = await createPayment(paymentData);
 
-  res.render("bookingConfirmation",{bookingDetails: paymentDetails});
+  res.render("bookingConfirmation",{bookingDetails: paymentDetails,orderId});
 });
 
 module.exports = router;

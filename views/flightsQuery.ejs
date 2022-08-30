@@ -26,19 +26,13 @@
                     <option value="economy">Economy</option>
                 </select>
             </div>
-            <div class="passengerType form-contents">
-                <select name="passengerType" id="cabinClass">
-                    <option value="Select passenger category" disabled selected>Select passenger category</option>
-                    <option value="adult">Adult</option>
-                    <option value="child">Child</option>
-                    <option value="infant_without_seat">Infact without seat</option>
-                </select>
+
+            <div class="numPassengers">
+                <input type="number" placeholder="Number of Passengers" min="1" id="num" required onchange="insertFields()">
             </div>
-            <div class="familyName form-contents">
-                <input type="text" placeholder="Family Name*" name="familyName" id="familyName" required>
-            </div>
-            <div class="givenName form-contents">
-                <input type="text" placeholder="Given Name*" name="givenName" id="givenName" required>
+            
+            <div id="passengerDetails">
+                
             </div>
             <div class="departureDate form-contents">
                 <label for="departureDate">Departure Date</label>
@@ -69,6 +63,19 @@
             </div>
         </form>
     </div>
+
+    <script>
+
+        let insertFields = () => {
+            let numPassengers = document.getElementById("num").value;
+            document.getElementById("passengerDetails").innerHTML = "";
+            
+            for(let i=0;i<numPassengers;i++) {
+                document.getElementById("passengerDetails").innerHTML += '<div class="passengerType form-contents"><select name="passengerType" id="cabinClass"><option value="Select passenger category" disabled selected>Select passenger category</option><option value="adult">Adult</option><option value="child">Child</option><option value="infant_without_seat">Infact without seat</option></select></div><div class="familyName form-contents"><input type="text" placeholder="Family Name*" name="familyName" id="familyName" required></div><div class="givenName form-contents"><input type="text" placeholder="Given Name*" name="givenName" id="givenName" required></div>';
+            }
+        }
+        
+    </script>
 
 </body>
 

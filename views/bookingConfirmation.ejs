@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Confirmation</title>
+    <title>Booking Confirmation</title>
 </head>
 <body>
+    <div>
+        <h4>
+            Payment Completed!
+        </h4>
+    </div>
     <%=JSON.stringify(bookingDetails)%>
 
     <form action="/api/orders/initiate-cancel/<%=orderId%>" method="post">

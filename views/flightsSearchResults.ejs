@@ -24,6 +24,9 @@
                 <b><%=result.id%></b>
             </p>
             <p>
+                <b><%=(result.payment_requirements.requires_instant_payment === true) ? "Requires instant payment" : "Instant payment not compulsory"%></b>
+            </p>
+            <p>
                 <%=JSON.stringify(result)%>
             </p>
         </div>

@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Flights</title>
 </head>
+
 <body>
+
+    
+
     <div class="search-header">
         <h4>
             Book Flights
@@ -20,15 +24,9 @@
 
             <%passengersData.map((data) => {%>
                 <div class="passengerType form-contents">
-                    <select name="passengerType" id="passengerType" required>
-                        <option value="Select passenger category" disabled selected>Select passenger category</option>
-                        <option value="adult">Adult</option>
-                        <option value="child" >Child</option>
-                        <option value="infant_without_seat">Infant without seat</option>
+                    <select name="passengerType" id="passengerType" required disabled>
+                        <option value="<%=data.type%>" selected disabled><%=data.type.charAt(0).toUpperCase() + data.type.substr(1,data.type.length)%></option>
                     </select>
-                    <!-- selected="<%(data.type === 'adult') ? true : false%>" -->
-                    <!-- selected="<%(data.type === 'child') ? true : false%>" -->
-                    <!-- selected="<%(data.type === 'infant_without_seat') ? true : false%>" -->
                 </div>
                 <div class="familyName form-contents">
                     <input type="text" placeholder="Family Name" name="familyName" id="familyName" value="<%=data.family_name%>" disabled>
@@ -80,5 +78,6 @@
             </div>
         </form>
     </div>
+
 </body>
 </html>

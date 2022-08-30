@@ -22,6 +22,14 @@ router.post("/", async (req, res) => {
     arrivalTimeFrom,
     arrivalTimeTo,
   } = req.body;
+
+  if(Array.isArray(passengerType) == false) {
+    passengerType = [passengerType]
+    familyName = [familyName];
+    givenName = [givenName];
+  }
+
+  // console.log(familyName, givenName, passengerType);
   
   let jsonData = {
     data: {
@@ -45,12 +53,18 @@ router.post("/", async (req, res) => {
       cabin_class: cabinClass,
     },
   };
+  
+  console.log("passengerType: ",passengerType)
 
-  jsonData.data.passengers.push(JSON.parse(JSON.stringify({
-    family_name: familyName,
-    given_name: givenName,
-    type: passengerType,
-  })))
+  for(let i=0;i<familyName.length;i++) {
+    jsonData.data.passengers.push(JSON.parse(JSON.stringify({
+      family_name: familyName[i],
+      given_name: givenName[i],
+      type: passengerType[i],
+    })))
+  }
+
+  // console.log(jsonData.data.passengers);
 
   let offer_request_id = await createOfferRequest(jsonData);
   let redirectUrl = "/api/flights-queries/results/" + offer_request_id;
@@ -64,13 +78,11 @@ router.get("/results/:offer_request_id", async (req, res) => {
   let { offer_request_id } = req.params;
 
   let searchResults = await getOffers(offer_request_id);
-  // console.log(searchResults);
-
-  // let flightsSearchResults = searchResults.map((result) => {return {total_currency : result.total_currency, total_amount : result.total_amount, tax_currency : result.tax_currency, tax_amount : result.tax_amount, slices : result.slices,passengers : result.passengers, owner : result.owner.name,owner : result.owner.iata_code,id : result.id,base_currency : result.base_currency,base_amount : result.base_amount}});
-
+  
   res.render("flightsSearchResults", {
     flightsSearchResults: searchResults,
     offer_request_id,
+    requiresInstantPayment: searchResults
   });
 });
 

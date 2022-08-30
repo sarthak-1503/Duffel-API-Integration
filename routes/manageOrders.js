@@ -3,12 +3,14 @@ let axios = require("axios");
 const createOrder = require("../API Operations/CreateOrder");
 const getSingleOfferRequest = require("../API Operations/GetSingleOfferRequest");
 const getSingleOffer = require("../API Operations/GetSingleOffer");
-const getSingleOrder = require("../API Operations/GetSingleOrder")
+const getSingleOrder = require("../API Operations/GetSingleOrder");
 let router = express.Router();
-let countryCodes = require("../Resources/CountryCodes.json");
 const cancelOrder = require("../API Operations/CancelOrder");
 const getSingleOrderCancellation = require("../API Operations/GetSingleOrderCancellation");
 const confirmOrderCancellation = require("../API Operations/ConfirmOrderCancellation");
+const getPaymentAndServiceDetails = require("../Operations/getPaymentAndServiceDetails");
+const getPassengerDetails = require("../Operations/getPassengerDetails");
+const convertAllToArrays = require("../Operations/convertAllToArrays");
 
 router.get("/createOrder/:offer_request_id", async (req, res) => {
   let offerRequestDetails = await getSingleOfferRequest(
@@ -23,146 +25,115 @@ router.get("/createOrder/:offer_request_id", async (req, res) => {
 });
 
 router.post("/createOrder/:offer_request_id", async (req, res) => {
-  let { dob, title, phone_no, gender, email, offerids, country } = req.body;
-  // {passengerId, passengerType, familyName, givenName}
-  let offerPaymentDetails = [];
-  let offerServiceDetails = [];
+  let { dob, title, phone_no, gender, email, offerids, country, paymentType } =
+    req.body;
 
-  offerids = [offerids];
+  console.log("req-body: ",req.body)
 
-  for (let i = 0; i < offerids.length; i++) {
-    let id = offerids[i];
-    let offerDetails = await getSingleOffer(id);
+  let reqBody;
 
-    // if(offerDetails.errors != undefined) {
-    //     continue;
-    // }
-    // console.log("offerdetails: ", offerDetails);
-
-    let totalAmount =
-      parseFloat(offerDetails.total_amount) +
-      parseFloat(offerDetails.available_services[0].total_amount);
-
-    totalAmount = Math.round(totalAmount * 100)/100;
-    // console.log("totalAmount: ",totalAmount);
-
-    let paymentDetails = {
-      type: "balance",
-      currency: offerDetails.total_currency,
-      amount: totalAmount.toString(),
-    };
-    offerPaymentDetails.push(JSON.parse(JSON.stringify(paymentDetails)));
-
-    let serviceDetails = {
-        id: offerDetails.available_services[0].id,
-        quantity: 1
-    };
-
-    offerServiceDetails.push(JSON.parse(JSON.stringify(serviceDetails)));
+  if(Array.isArray(dob) === false) {
+    reqBody = convertAllToArrays(req.body);
+  } else {
+    reqBody = req.body;
+    reqBody.offerids = [offerids];
   }
+  // let offerDetails = await getSingleOffer(offerids[0]);
 
-//   console.log("offerPaymentDetails: ", offerPaymentDetails);
-//   console.log("offerServiceDetails: ", offerServiceDetails);
+  // if (offerDetails.payment_requirements.requires_instant_payment === true && paymentType != "instant") {
+  //   return res.send(
+  //     "This flight booking requires instant payment. Either close this page and choose another flight or go back to do instant payment."
+  //   );
+  // }
+  // {passengerId, passengerType, familyName, givenName}
+  let { offerPaymentDetails, offerServiceDetails } =
+    await getPaymentAndServiceDetails(reqBody);
 
-  if(offerPaymentDetails.length === 0) {
+  // console.log("offerPaymentDetails: ",offerPaymentDetails);
+  // console.log("offerServiceDetails: ",offerServiceDetails);
+
+  if (offerPaymentDetails.length === 0) {
     return res.status(400).send("No booking available");
   }
 
-  let offerRequestDetails = await getSingleOfferRequest(
-    req.params.offer_request_id
+  let passengersDetails = await getPassengerDetails(
+    req.params.offer_request_id,
+    reqBody
   );
-  
-  let temp = offerRequestDetails.data.passengers;
-  let details = [];
-  details.push(
-    JSON.parse(JSON.stringify({ dob, email, gender, title, phone_no }))
-  );
-
-  let passengersDetails = [];
-
-  for (let i = 0; i < temp.length; i++) {
-    let countryinfo = countryCodes.find((countrydetails) => {
-      return countrydetails.name === country;
-    });
-
-    let passengerInfo = {
-      born_on: details[i].dob,
-      email: details[i].email,
-      gender: details[i].gender,
-      title: details[i].title,
-      phone_number: countryinfo.dial_code + details[i].phone_no,
-      family_name: temp[i].family_name,
-      given_name: temp[i].given_name,
-      type: temp[i].type,
-      id: temp[i].id,
-    };
-
-    passengersDetails.push(JSON.parse(JSON.stringify(passengerInfo)));
-  }
 
   let jsonData = {
     data: {
-      type: "instant",
+      type: paymentType,
       services: offerServiceDetails,
-      selected_offers: offerids,
-      payments: offerPaymentDetails,
+      selected_offers: reqBody.offerids,
       passengers: passengersDetails,
     },
   };
 
+  let redirectUrl;
+
+  if (paymentType === "instant") {
+    jsonData.data.payments = JSON.parse(JSON.stringify(offerPaymentDetails));
+  }
+
   let orderDetails = await createOrder(jsonData);
-//   console.log("orderdetails: ",orderDetails);
-  
-  let redirectUrl = "/api/orders/orderConfirmation/" + orderDetails.id;
-  
+
+  if (paymentType === "instant") {
+    redirectUrl = "/api/orders/orderConfirmation/" + orderDetails.id;
+  } else {
+    redirectUrl = "/api/payments/create/" + orderDetails.id;
+  }
+
   res.redirect(redirectUrl);
 });
 
-router.get("/orderConfirmation/:orderId",async(req,res)=> {
-    
-    let {orderId} = req.params;
-    let orderDetails = await getSingleOrder(req.params.orderId);
-    console.log("orderDetails: ",orderDetails);
+router.get("/orderConfirmation/:orderId", async (req, res) => {
+  let { orderId } = req.params;
+  let orderDetails = await getSingleOrder(req.params.orderId);
+  console.log("orderDetails: ", orderDetails);
 
-    res.render("bookingConfirmation",{bookingDetails: orderDetails, orderId});
-})
-
-router.post("/initiate-cancel/:orderId",async(req,res) => {
-
-    let {orderId} = req.params;
-    let jsonData = {
-        data: {
-            order_id: orderId
-        }
-    }
-
-    let precancellationDetails = await cancelOrder(jsonData);
-    let redirectUrl = "/api/orders/confirm-cancel/" + orderId + "/" + precancellationDetails.id;
-
-    res.redirect(redirectUrl);
+  res.render("bookingConfirmation", { bookingDetails: orderDetails, orderId });
 });
 
-router.get("/confirm-cancel/:orderId/:precancellationId",async(req,res) => {
-   
-    let {orderId, precancellationId} = req.params;
-    let orderDetails = await getSingleOrder(orderId);
+router.post("/initiate-cancel/:orderId", async (req, res) => {
+  let { orderId } = req.params;
+  let jsonData = {
+    data: {
+      order_id: orderId,
+    },
+  };
 
-    res.render("confirmCancellation",{orderDetails,orderId,precancellationId});
-})
+  let precancellationDetails = await cancelOrder(jsonData);
+  let redirectUrl =
+    "/api/orders/confirm-cancel/" + orderId + "/" + precancellationDetails.id;
 
-router.post("/confirm-cancel/:orderId/:precancellationId",async(req,res) => {
+  res.redirect(redirectUrl);
+});
 
-    let {orderId, precancellationId} = req.params;
-    let cancellationDetails = await confirmOrderCancellation(precancellationId);
-    let redirectUrl = "/api/orders/cancellation-successful/" + cancellationDetails.id;
-    res.redirect(redirectUrl);
-})
+router.get("/confirm-cancel/:orderId/:precancellationId", async (req, res) => {
+  let { orderId, precancellationId } = req.params;
+  let orderDetails = await getSingleOrder(orderId);
 
-router.get("/cancellation-successful/:cancellationId",async(req,res) => {
-    let {cancellationId} = req.params;
-    let cancellationDetails = await getSingleOrderCancellation(cancellationId);
+  res.render("confirmCancellation", {
+    orderDetails,
+    orderId,
+    precancellationId,
+  });
+});
 
-    res.render("orderCancellationDetails",{cancellationDetails});
-})
+router.post("/confirm-cancel/:orderId/:precancellationId", async (req, res) => {
+  let { orderId, precancellationId } = req.params;
+  let cancellationDetails = await confirmOrderCancellation(precancellationId);
+  let redirectUrl =
+    "/api/orders/cancellation-successful/" + cancellationDetails.id;
+  res.redirect(redirectUrl);
+});
+
+router.get("/cancellation-successful/:cancellationId", async (req, res) => {
+  let { cancellationId } = req.params;
+  let cancellationDetails = await getSingleOrderCancellation(cancellationId);
+
+  res.render("orderCancellationDetails", { cancellationDetails });
+});
 
 module.exports = router;
