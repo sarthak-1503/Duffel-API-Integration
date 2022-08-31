@@ -16,7 +16,7 @@
         </h4>
     </div>
     <div class="form-header">
-        <form action="/api/flights-queries" method="POST">
+        <form onsubmit="return reviewPassengers(event);" action="/api/flights-queries" method="POST">
             <div class="cabinClass form-contents">
                 <select name="cabinClass" id="cabinClass">
                     <option value="Select Cabin Class" disabled selected>Select Cabin Class</option>
@@ -73,6 +73,36 @@
             for(let i=0;i<numPassengers;i++) {
                 document.getElementById("passengerDetails").innerHTML += '<div class="passengerType form-contents"><select name="passengerType" id="cabinClass"><option value="Select passenger category" disabled selected>Select passenger category</option><option value="adult">Adult</option><option value="child">Child</option><option value="infant_without_seat">Infact without seat</option></select></div><div class="familyName form-contents"><input type="text" placeholder="Family Name*" name="familyName" id="familyName" required></div><div class="givenName form-contents"><input type="text" placeholder="Given Name*" name="givenName" id="givenName" required></div>';
             }
+        }
+
+        let reviewPassengers = (event) => {
+            let passengers = document.getElementsByName("passengerType");
+            // console.log("passengers: ",passengers)  
+
+            passengers = Array.from(passengers)
+
+            let infant_passengers = [];
+            let adult_passengers = [];
+
+            passengers.map(passenger => {
+                // console.log("passenger: ",passenger.value); 
+
+                if(passenger.value === "infant_without_seat") {
+                    infant_passengers.push(JSON.parse(JSON.stringify(passenger.value)));
+                } else if(passenger.value === "adult") {
+                    adult_passengers.push(JSON.parse(JSON.stringify(passenger.value)));
+                }
+            });
+            // console.log("infant_passengers: ",infant_passengers);
+
+            if(infant_passengers.length > adult_passengers.length) {
+                event.preventDefault();
+                alert("One unique adult passenger is required for each infant. So there can't be " + infant_passengers.length + " infant" + ((infant_passengers.length !== 1) ? "s" : "") + " and " + (adult_passengers.length) + " adult" + ((adult_passengers.length !== 1) ? "s" : ""));
+                // document.getElementsByName("passengerType").value = "";
+                return false;
+            }
+
+            return true;
         }
         
     </script>

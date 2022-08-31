@@ -11,6 +11,7 @@ const confirmOrderCancellation = require("../API Operations/ConfirmOrderCancella
 const getPaymentAndServiceDetails = require("../Operations/getPaymentAndServiceDetails");
 const getPassengerDetails = require("../Operations/getPassengerDetails");
 const convertAllToArrays = require("../Operations/convertAllToArrays");
+const { json } = require("body-parser");
 
 router.get("/createOrder/:offer_request_id", async (req, res) => {
   let offerRequestDetails = await getSingleOfferRequest(
@@ -18,17 +19,36 @@ router.get("/createOrder/:offer_request_id", async (req, res) => {
   );
   let passengersData = offerRequestDetails.data.passengers;
 
-  res.render("bookFlights", {
+  let passengersDetails = JSON.parse(JSON.stringify(passengersData));
+  let adults = [];
+  let infants = [];
+
+  passengersDetails.map(passenger => {
+    if(passenger.type === "infant_without_seat") {
+      infants.push(JSON.parse(JSON.stringify(passenger)));
+    } else if(passenger.type === "adult") {
+      adults.push(JSON.parse(JSON.stringify(passenger)));
+    }
+  })
+
+  let jsonData = {
     offer_request_id: req.params.offer_request_id,
-    passengersData,
-  });
+    passengersData
+  }
+
+  if(infants.length) {
+    jsonData.adults = JSON.parse(JSON.stringify(adults));
+    jsonData.infants = JSON.parse(JSON.stringify(infants));
+  }
+
+  res.render("bookFlights", jsonData);
 });
 
 router.post("/createOrder/:offer_request_id", async (req, res) => {
-  let { dob, title, phone_no, gender, email, offerids, country, paymentType } =
-    req.body;
+  let { dob, title, phone_no, gender, email, offerids, country, paymentType, responsibleAdults } = req.body;
 
   console.log("req-body: ",req.body)
+  console.log("dob: ",dob);
 
   let reqBody;
 
@@ -38,6 +58,17 @@ router.post("/createOrder/:offer_request_id", async (req, res) => {
     reqBody = req.body;
     reqBody.offerids = [offerids];
   }
+
+  if((responsibleAdults != undefined) && responsibleAdults) {
+
+    if(Array.isArray(responsibleAdults) === false) {
+      responsibleAdults = [responsibleAdults];
+    }
+
+    reqBody.responsibleAdults = JSON.parse(JSON.stringify(responsibleAdults));
+  } else {
+    reqBody.responsibleAdults = null;
+  }
   // let offerDetails = await getSingleOffer(offerids[0]);
 
   // if (offerDetails.payment_requirements.requires_instant_payment === true && paymentType != "instant") {
@@ -46,8 +77,7 @@ router.post("/createOrder/:offer_request_id", async (req, res) => {
   //   );
   // }
   // {passengerId, passengerType, familyName, givenName}
-  let { offerPaymentDetails, offerServiceDetails } =
-    await getPaymentAndServiceDetails(reqBody);
+  let { offerPaymentDetails, offerServiceDetails } = await getPaymentAndServiceDetails(reqBody);
 
   // console.log("offerPaymentDetails: ",offerPaymentDetails);
   // console.log("offerServiceDetails: ",offerServiceDetails);

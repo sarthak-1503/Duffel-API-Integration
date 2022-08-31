@@ -17,7 +17,7 @@
         </h4>
     </div>
     <div class="form-header">
-        <form action="/api/orders/createOrder/<%=offer_request_id%>" method="POST">
+        <form onsubmit="return reviewPassengers(event);" action="/api/orders/createOrder/<%=offer_request_id%>" method="POST">
             <!-- <div class="passengerId form-contents">
                 <input type="text" placeholder="Passenger ID" name="passengerId" id="passengerId">
             </div> -->
@@ -27,6 +27,15 @@
                     <select name="passengerType" id="passengerType" required disabled>
                         <option value="<%=data.type%>" selected disabled><%=data.type.charAt(0).toUpperCase() + data.type.substr(1,data.type.length)%></option>
                     </select>
+
+                    <%if(data.type === "infant_without_seat") {%>
+                        <select name="responsibleAdults" id="responsibleAdults" required>
+                            <option value="Select adult responsible" selected disabled>Select adult responsible for <%=data.given_name%> <%=data.family_name%></option>
+                            <%adults.map(adult => {%>
+                                <option value="<%=adult.id%> <%=data.id%>"><%=adult.given_name%> <%=adult.family_name%></option>
+                            <%})%>
+                        </select>        
+                    <%}%>
                 </div>
                 <div class="familyName form-contents">
                     <input type="text" placeholder="Family Name" name="familyName" id="familyName" value="<%=data.family_name%>" disabled>
@@ -59,7 +68,8 @@
                 </select>
                 <div class="email form-contents">
                     <input type="email" placeholder="Email*" name="email" id="email" required>
-                </div>     
+                </div>    
+                <br> 
             <%})%>
 
             <div class="paymentType form-contents">
@@ -80,4 +90,34 @@
     </div>
 
 </body>
+
+<script>
+    let reviewPassengers = (event) => {
+        
+            let responsibleAdults = document.getElementsByName("responsibleAdults");
+
+            if(responsibleAdults === undefined || responsibleAdults === null || responsibleAdults.length === 0) {
+                return true;
+            }
+
+            console.log("responsibleAdults: ",responsibleAdults)  
+            responsibleAdults = Array.from(responsibleAdults);
+
+            let passengers = new Set();
+            responsibleAdults.map(adult => {
+                let adultId = adult.value.split(" ")[0];
+                passengers.add(adultId);
+            })
+
+            if(passengers.size !== responsibleAdults.length) {
+                event.preventDefault();
+                alert("Unique adult passengers are allowed for each infant.");
+                // document.getElementsByName("passengerType").value = "";
+                return false;
+            }
+
+            return true;
+        }
+</script>
+
 </html>

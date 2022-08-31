@@ -5,6 +5,7 @@ const getOffers = require("../API Operations/GetOffers");
 let router = express.Router();
 
 router.get("/", (req, res) => {
+   
   res.render("flightsQuery");
 });
 
@@ -64,12 +65,8 @@ router.post("/", async (req, res) => {
     })))
   }
 
-  // console.log(jsonData.data.passengers);
-
   let offer_request_id = await createOfferRequest(jsonData);
   let redirectUrl = "/api/flights-queries/results/" + offer_request_id;
-
-  // console.log("flight confirmation id: ", offer_request_id);
 
   res.redirect(redirectUrl);
 });
